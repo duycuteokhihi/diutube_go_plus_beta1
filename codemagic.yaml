@@ -1,0 +1,21 @@
+workflows:
+  build-slim:
+    name: Build Sieu Nhe APK & IPA
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+    scripts:
+      - name: Tai thu vien
+        script: flutter pub get
+      - name: Xuat APK sieu nhe (arm64)
+        script: flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/debug-info
+      - name: Xuat IPA sieu nhe
+        script: |
+          flutter build ios --release --no-codesign --obfuscate --split-debug-info=build/debug-info
+          mkdir -p build/ios/ipa/Payload
+          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
+          cd build/ios/ipa && zip -r app-unsigned.ipa Payload
+    artifacts:
+      - build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+      - build/ios/ipa/app-unsigned.ipa
